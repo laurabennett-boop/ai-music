@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Music Lab — Laura Bennett</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --card: #12121a;
+            --border: #1e1e2e;
+            --accent: #8b5cf6;
+            --accent2: #06b6d4;
+            --text: #e4e4e7;
+            --muted: #71717a;
+            --glow: rgba(139, 92, 246, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(139, 92, 246, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(139, 92, 246, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: var(--accent);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .logo .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 8px rgba(139, 92, 246, 0); }
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #e4e4e7 0%, #8b5cf6 50%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        .track-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .track-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .track-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 30px var(--glow);
+            transform: translateY(-2px);
+        }
+
+        .track-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .track-cover {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .track-cover-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .track-info {
+            flex: 1;
+        }
+
+        .track-number {
+            font-size: 11px;
+            color: var(--accent);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .track-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .track-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--muted);
+            background: rgba(139, 92, 246, 0.08);
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(139, 92, 246, 0.15);
+        }
+
+        .tag.bpm {
+            color: var(--accent2);
+            background: rgba(6, 182, 212, 0.08);
+            border-color: rgba(6, 182, 212, 0.15);
+        }
+
+        .track-description {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        audio {
+            width: 100%;
+            height: 40px;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        audio::-webkit-media-controls-panel {
+            background: rgba(30, 30, 46, 0.8);
+        }
+
+        .hero-image {
+            width: 100%;
+            border-radius: 16px;
+            margin-bottom: 40px;
+            border: 1px solid var(--border);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .gen-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(6, 182, 212, 0.15));
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text);
+            margin-top: 16px;
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 28px; }
+            .stats { gap: 24px; }
+            .stat-value { font-size: 22px; }
+            .track-header { flex-direction: column; align-items: center; text-align: center; }
+            .track-meta { justify-content: center; }
+            .container { padding: 24px 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="dot"></div>
+                AI Music Lab
+            </div>
+            <h1>Laura's AI Music Collection</h1>
+            <p class="subtitle">
+                AI 生成的音乐合集 — 由 Google Gemini (Lyria) 模型生成<br>
+                每首曲目都是实时生成，没有模板，没有采样库
+            </p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Tracks</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">House</div>
+                    <div class="stat-label">Genre</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">Gemini</div>
+                    <div class="stat-label">AI Model</div>
+                </div>
+            </div>
+        </header>
+
+        <img src="images/house-dance-neon-alley.jpg" alt="House Dance in Neon Alley" class="hero-image">
+
+        <div class="track-list">
+
+            <div class="track-card">
+                <div class="track-header">
+                    <div class="track-cover-placeholder" style="background: linear-gradient(135deg, #1a1a2e, #8b5cf6);">🌍</div>
+                    <div class="track-info">
+                        <div class="track-number">Track 01</div>
+                        <div class="track-title">Coflo Style — Afro Deep House</div>
+                        <div class="track-meta">
+                            <span class="tag bpm">122 BPM</span>
+                            <span class="tag">Afro Deep House</span>
+                            <span class="tag">Tribal</span>
+                            <span class="tag">Spiritual</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="track-description">
+                    模仿 Coflo (NYC Afro Deep House 制作人) 的风格生成。四拍底鼓 + 深沉 sub-bass，多层部落打击乐（djembe、congas、shakers），
+                    灵魂女声采样 + 大厅混响，Kalimba 有机旋律 + Rhodes 电钢琴和弦，温暖模拟合成器 pad 做氛围。催眠式的、灵性的、根植于非洲节奏与纽约地下 deep house 的融合。
+                </p>
+                <audio controls preload="metadata">
+                    <source src="tracks/coflo-style-afro-deep-house-122bpm.mp3" type="audio/mpeg">
+                </audio>
+                <div class="gen-badge">✨ Generated on 2026-04-17 · Gemini Lyria · Prompt-to-Music</div>
+            </div>
+
+            <div class="track-card">
+                <div class="track-header">
+                    <div class="track-cover-placeholder" style="background: linear-gradient(135deg, #0f172a, #06b6d4);">🎵</div>
+                    <div class="track-info">
+                        <div class="track-number">Track 02</div>
+                        <div class="track-title">Groovy House Beat</div>
+                        <div class="track-meta">
+                            <span class="tag bpm">121 BPM</span>
+                            <span class="tag">House</span>
+                            <span class="tag">Funky</span>
+                            <span class="tag">Soulful</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="track-description">
+                    经典 Groovy House 风格。强劲的 TR-909 四拍底鼓，深沉的 syncopated sub-bass，明亮的钢琴 riff 弹奏 jazzy major 7th 和 minor 9th 和弦，
+                    灵魂女声采样 (oohs, yeahs) 配合混响和延迟效果。整体混音干净宽广，钢琴和人声采样对底鼓做 sidechain 增强弹跳感。
+                </p>
+                <audio controls preload="metadata">
+                    <source src="tracks/house-dance-beat-121bpm.mp3" type="audio/mpeg">
+                </audio>
+                <div class="gen-badge">✨ Generated on 2026-04-17 · Gemini Lyria · Prompt-to-Music</div>
+            </div>
+
+        </div>
+
+        <footer>
+            <p>AI Music Lab by Laura Bennett</p>
+            <p>All music generated by <a href="https://deepmind.google/technologies/gemini/" target="_blank">Google Gemini</a> (Lyria model)</p>
+            <p>Powered by <a href="https://github.com/laurabennett-boop" target="_blank">VisionClaw</a> · Last updated: 2026-04-17</p>
+        </footer>
+    </div>
+</body>
+</html>
